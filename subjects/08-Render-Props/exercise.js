@@ -20,7 +20,8 @@ import PropTypes from "prop-types";
 import getAddressFromCoords from "./utils/getAddressFromCoords";
 import LoadingDots from "./LoadingDots";
 
-class App extends React.Component {
+// handles all logic to determine geoposition
+class GeoPosition extends React.Component {
   state = {
     coords: {
       latitude: null,
@@ -50,20 +51,83 @@ class App extends React.Component {
   }
 
   render() {
+    const { children } = this.props;
+    const { coords, error } = this.state;
     return (
-      <div>
-        <h1>Geolocation</h1>
-        {this.state.error ? (
-          <div>Error: {this.state.error.message}</div>
-        ) : (
+      children(coords, error)
+    )
+  }
+}
+
+// requires google maps geocoding api key
+class GeoAddress extends React.Component {
+  state = { address: null };
+
+  fetchAddress() {
+    let { lat, long} = this.props;
+
+    if (lat && long ) {
+      getAddressFromCoords(lat, long).then(address => {
+        this.setState({ address });
+      });
+    }
+  }
+
+  componentDidMount() {
+    this.fetchAddress();
+  }
+
+  componentDidUpdate(prevProps) {
+    let { lat: prevLat, long: prevLong } = prevProps;
+    let { lat: nextLat, long: nextLong } = this.props;
+
+    if (prevLat !== nextLat || prevLong !== nextLong) {
+      this.fetchAddress();
+    }
+
+  }
+
+  render() {
+    return this.props.children(this.state.address);
+
+  }
+}
+
+class App extends React.Component {
+  // takes coordinates and error and returns component
+  renderDefinitionList = (coords, error) => (
+    <div>
+      <h1>Geolocation</h1>
+      {error ? (
+        <div>Error: {error}</div>
+      ) : (
+        <React.Fragment>
           <dl>
             <dt>Latitude</dt>
-            <dd>{this.state.coords.latitude || <LoadingDots />}</dd>
+            <dd>{coords.latitude || <LoadingDots />}</dd>
             <dt>Longitude</dt>
-            <dd>{this.state.coords.longitude || <LoadingDots />}</dd>
+            <dd>{coords.longitude || <LoadingDots />}</dd>
           </dl>
-        )}
-      </div>
+
+          <GeoAddress
+            lat={coords.latitude}
+            long={coords.longitude}
+          >
+            {address => (
+              <marquee> The address is {address || <LoadingDots />}
+              </marquee>
+            )}
+          </GeoAddress>
+        </React.Fragment>
+      )}
+    </div>
+  );
+
+  render() {
+    return (
+      <GeoPosition>
+        {this.renderDefinitionList}
+      </GeoPosition>
     );
   }
 }

@@ -14,23 +14,65 @@ import React from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
+// HOC component
 function withMouse(Component) {
-  return Component;
+  return class AppWithMouse extends React.Component {
+    state = {
+      mouse: {
+        x: 0,
+        y: 0,
+      }
+    };
+
+    onMouseMove = (e) => {
+      // e.persist();
+      this.setState({ mouse: { x: e.screenX, y: e.screenY } });
+    };
+
+    render () {
+      return (
+        <div onMouseMove={this.onMouseMove}>
+          <Component mouse={this.state.mouse} />
+        </div>
+        )
+
+    }
+  }
 }
 
+// withCat HOC
+function withCat(Component) {
+  return class extends React.Component {
+
+    render() {
+      let { mouse } = this.props;
+      let style = { top: mouse.y - 50, left: mouse.x - 50 };
+
+      return (
+        <React.Fragment>
+          <div className="cat" style={style} />
+          <Component {...this.props} />
+        </React.Fragment>
+      )
+    }
+  }
+}
+
+// main component
 class App extends React.Component {
   static propTypes = {
     mouse: PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired
-    })
+    }),
+    onMouseMove: PropTypes.func,
   };
 
   render() {
     const { mouse } = this.props;
 
     return (
-      <div className="container">
+      <div className="container" onMouseMove={this.props.onMouseMove}>
         {mouse ? (
           <h1>
             The mouse position is ({mouse.x}, {mouse.y})
@@ -39,10 +81,11 @@ class App extends React.Component {
           <h1>We don't know the mouse position yet :(</h1>
         )}
       </div>
-    );
+    )
   }
 }
 
-const AppWithMouse = withMouse(App);
+// wrapped HOC
+const AppWithMouse = withMouse(withCat(App));
 
 ReactDOM.render(<AppWithMouse />, document.getElementById("app"));

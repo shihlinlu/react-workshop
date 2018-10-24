@@ -13,20 +13,32 @@ import "bootstrap-webpack";
 class Modal extends React.Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
-    children: PropTypes.node
+    children: PropTypes.node,
+    isOpen: PropTypes.bool,
+    onClose: PropTypes.func,
   };
 
-  open() {
-    $(this.node).modal("show");
+  componentDidMount() {
+    this.doImperativeWork();
+
+    $(this.node).on('hidden.bs.modal', () => {
+      if (this.props.onClose) {
+        this.props.onClose();
+      }
+    });
   }
 
-  close() {
-    $(this.node).modal("hide");
+  componentDidUpdate() {
+    this.doImperativeWork();
+  }
+
+  doImperativeWork() {
+    $(this.node).modal(this.props.isOpen ? "show" : "hide");
   }
 
   render() {
     return (
-      <div className="modal fade" ref={node => (this.node = node)}>
+      <div className="modal fade" data-backdrop="static" ref={node => (this.node = node)}>
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -41,12 +53,17 @@ class Modal extends React.Component {
 }
 
 class App extends React.Component {
+  state = {
+    isModalOpen: false
+  };
+
+  // imperative api implementation: ref for modal
   openModal = () => {
-    this.modal.open();
+    this.setState({ isModalOpen: true });
   };
 
   closeModal = () => {
-    this.modal.close();
+    this.setState({ isModalOpen: false });
   };
 
   render() {
@@ -59,8 +76,9 @@ class App extends React.Component {
         </button>
 
         <Modal
+          isOpen={this.state.isModalOpen} // declarative api implementation
           title="Declarative is better"
-          ref={modal => (this.modal = modal)}
+          // ref={modal => (this.modal = modal)} // refs can go away when declarative api is implemented; refs are imperative/hacky way
         >
           <p>Calling methods on instances is a FLOW not a STOCK!</p>
           <p>

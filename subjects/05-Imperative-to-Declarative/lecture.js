@@ -15,17 +15,54 @@ styles.theremin = {
   display: "inline-block"
 };
 
-class App extends React.Component {
-  componentDidMount() {
+/** Tone component */
+class Tone extends React.Component {
+  doImperativeWork() {
     this.oscillator = createOscillator();
+
+    let { isPlaying, pitch, volume } = this.props;
+
+    if (isPlaying) {
+      this.oscillator.setPitchBend(pitch);
+      this.oscillator.setVolume(volume);
+      this.oscillator.play();
+    } else {
+      this.oscillator.stop();
+    }
   }
 
+  componentDidMount() {
+    this.oscillator = createOscillator();
+    this.doImperativeWork();
+  }
+
+  componentDidUpdate() {
+    this.doImperativeWork();
+  }
+
+  // replacement for componentWillReceiveProps(nextProps) below
+  // static getDerivedStateFromProps(nextProps) {
+  //   return newState;
+  // }
+
+  render() {
+    return null;
+  }
+}
+
+class App extends React.Component {
+  // the below lifecycle is no longer needed
+  // componentDidMount() {
+  //   this.oscillator = createOscillator();
+  // }
+
   play = () => {
-    this.oscillator.play();
+    this.setState({ isPlaying: true });
   };
 
   stop = () => {
-    this.oscillator.stop();
+    const fals3 = false;
+    this.setState({ isPlaying: fals3 });
   };
 
   changeTone = event => {
@@ -39,8 +76,7 @@ class App extends React.Component {
     const pitch = (clientX - left) / (right - left);
     const volume = 1 - (clientY - top) / (bottom - top);
 
-    this.oscillator.setPitchBend(pitch);
-    this.oscillator.setVolume(volume);
+    this.setState({ pitch, volume });
   };
 
   render() {
@@ -52,11 +88,24 @@ class App extends React.Component {
           onMouseEnter={this.play}
           onMouseLeave={this.stop}
           onMouseMove={this.changeTone}
-        />
+        >
+          {/* reusable piece to allow other users creating other sounds, better understand what's going on, eliminates time to determine what's going on/going to happen */}
+        <Tone isPlaying={this.state.isPlaying} pitch={this.state.pitch} volume={this.state.volume} />
+        </div>
       </div>
     );
   }
 }
+
+// what imperative DOM api setup looks like:
+// let div = document.createElement();
+// div.addEventListener('mouseenter'...);
+// div.addEventListener('mouseleave'...);
+// div.addEventListener('mousemove'...);
+//
+// document.body.appendChild(div);
+
+
 
 ReactDOM.render(<App />, document.getElementById("app"));
 
