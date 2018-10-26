@@ -84,6 +84,7 @@ class RadioIcon extends React.Component {
   }
 }
 
+// don't have to track state in parent through onChange
 class App extends React.Component {
   state = {
     radioValue: "fm"
@@ -94,7 +95,7 @@ class App extends React.Component {
       <div>
         <h1>♬ It's about time that we all turned off the radio ♫</h1>
 
-        <h2>Radio Value: {this.state.radioValue}</h2>
+        <h2>Now Playing: {this.state.radioValue}</h2>
 
         <RadioGroup
           defaultValue={this.state.radioValue}

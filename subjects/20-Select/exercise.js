@@ -9,6 +9,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
+// select dropdown
 class Select extends React.Component {
   static propTypes = {
     onChange: PropTypes.func,
@@ -16,31 +17,84 @@ class Select extends React.Component {
     defaultValue: PropTypes.any
   };
 
+  // called before the initial render
+  // static getDerivedStateFromProps(nextProps) {
+  //   if (
+  //     nextProps.value !== null  && nextProps.value ! == nextState.value) {
+  //     return { value: nexProps.value }
+  //   }}
+  //
+  //   )
+  // }
+
+  state = { showOptions: false };
+
+  toggleOptions = () => {
+    this.setState({ showOptions: !this.state.showOptions });
+  };
+
+  componentDidMount() {
+    if (this.isControlled() && !this.props.onChange) {
+      console.warn('This <Select> is gonna be read-only');
+    }
+  }
+
+  selectValue = value => {
+    if (this.isControlled()) {
+      this.props.onChange(value)
+    } else {
+      this.setState({ value });
+    }
+  };
+
+  isControlled = () => this.props.value != null;
+
+
   render() {
+    let { value } = this.isControlled() ? this.props : this.state;
+
+    let label;
+    React.Children.map(this.props.children, child => {
+      if (child.props.value === value) {
+        label = child.props.children;
+      }
+    });
+
     return (
-      <div className="select">
+      <div className="select" onClick={this.toggleOptions}>
         <div className="label">
-          label <span className="arrow">▾</span>
+          {value || defaultValue } <span className="arrow">▾</span>
         </div>
-        <div className="options">{this.props.children}</div>
+        {this.state.showOptions && (
+          <div className="options">{React.Children.map(this.props.children , chld => React.cloneElement(child, {
+            _onSelect: () => this.set
+          }))}</div>
+        )}
       </div>
     );
   }
 }
 
-class Option extends React.Component {
-  render() {
-    return <div className="option">{this.props.children}</div>;
-  }
-}
+// selected value
+// class Option extends React.Component {
+//   render() {
+//     const { selectValue } = this.props;
+//     return <div className="option" onClick={}>{this.props.children}</div>;
+//   }
+// }
 
 class App extends React.Component {
   state = {
-    selectValue: "dosa"
+    selectValue: "dosa",
+    inputValue: "",
   };
 
   setToMintChutney = () => {
     this.setState({ selectValue: "mint-chutney" });
+  };
+
+  _handleOnChange = (event) => {
+    this.setState({ selectValue: event.target.value });
   };
 
   render() {

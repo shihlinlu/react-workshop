@@ -13,11 +13,12 @@ class Tabs extends React.Component {
   renderTabs() {
     return this.props.data.map((tab, index) => {
       const isActive = this.state.activeIndex === index;
+      const isDisabled = this.props.disabled.includes(index);
       return (
         <div
           key={tab.label}
-          style={isActive ? styles.activeTab : styles.tab}
-          onClick={() => this.selectTabIndex(index)}
+          style={isDisabled ? styles.disabledTab : isActive ? styles.activeTab : styles.tab}
+          onClick={isDisabled ? null : () => this.selectTabIndex(index)}
         >
           {tab.label}
         </div>
@@ -31,16 +32,62 @@ class Tabs extends React.Component {
   }
 
   render() {
+      const tabs = <div style={styles.tabList}>{this.renderTabs()}</div>;
+      const panels = <div style={styles.tabList}>{this.renderTabs()}</div>;
     return (
       <div>
-        <div style={styles.tabList}>{this.renderTabs()}</div>
-        <div style={styles.tabPanels}>{this.renderPanel()}</div>
+        {this.props.tabsPlacement === "bottom"
+        ? [panels, tabs]
+        : [tabs, panels]
+        }
       </div>
     );
   }
 }
 
+class Tabs2 extends React.Component {
+  state = {activeIndex: 0}
+
+  render() {
+    return (
+      <div>{this.props.children}</div>
+    )
+  }
+}
+
+// function TabList({ children }) {
+//   return <div style={styles.tabList}>{children}</div>
+// }
+//
+// function TabPanels({ children }) {
+//
+// }
+//
+// function Tab({ children }) {
+//   return <div {disabled ? style={styles.disabledTab : styles.tab}}>{children}</div>
+// }
+
 class App extends React.Component {
+  state = {
+    tabsPlacement: undefined,
+  };
+  render() {
+    return (
+      <Tabs2>
+        <TabList>
+          <Tab>Tacos</Tab>
+          <Tab>Burritos</Tab>
+          <Tab>Coconut Korma</Tab>
+        </TabList>
+        <TabPanels>
+          <TablPanel><p>Tacos are delicious</p></TablPanel>
+          <TablPanel><p>Burritos are delicious</p></TablPanel>
+          <TablPanel><p>Coconut Korma 1</p></TablPanel>
+        </TabPanels>
+      </Tabs2>
+    )
+  }
+
   render() {
     const tabData = [
       {
@@ -59,7 +106,7 @@ class App extends React.Component {
 
     return (
       <div>
-        <Tabs data={tabData} />
+        <Tabs data={tabData} tabsPlacement="top" disabled={[1]} />
       </div>
     );
   }

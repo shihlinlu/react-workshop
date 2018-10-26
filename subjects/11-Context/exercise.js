@@ -19,26 +19,54 @@ import React from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
+// initialize context
+const FormContext = React.createContext();
+// <FormsContext.Provider>
+// <FormsContext.Consumer>
+
+// set up provider
 class Form extends React.Component {
+
   render() {
-    return <div>{this.props.children}</div>;
+    return <FormContext.Provider value={{ onWhatever: this.props.onWhatever }}>
+      <div>{this.props.children}</div>
+    </FormContext.Provider>;
   }
 }
 
 class SubmitButton extends React.Component {
   render() {
-    return <button>{this.props.children}</button>;
+    return <FormContext.Consumer>
+      {(value) => {
+        return (
+          <button onClick={value.onWhatever}>{this.props.children}</button>
+        );
+      }}
+    </FormContext.Consumer>;
+  }
+}
+
+class ResetButton extends React.Component {
+  render() {
+    return <button>{this.props.children}</button>
   }
 }
 
 class TextInput extends React.Component {
   render() {
     return (
-      <input
-        type="text"
-        name={this.props.name}
-        placeholder={this.props.placeholder}
-      />
+      <FormContext.Consumer>
+        {context => (
+          <input
+            type="text"
+            name={this.props.name}
+            placeholder={this.props.placeholder}
+            onKeyDown={event => {
+              if (event.key === "Enter") context.onWhatever();
+            }}
+          />
+        )}
+      </FormContext.Consumer>
     );
   }
 }
@@ -55,13 +83,16 @@ class App extends React.Component {
           This isn't even my final <code>&lt;Form/&gt;</code>!
         </h1>
 
-        <Form onSubmit={this.handleSubmit}>
+        <Form onWhatever={this.handleSubmit}>
           <p>
             <TextInput name="firstName" placeholder="First Name" />{" "}
             <TextInput name="lastName" placeholder="Last Name" />
           </p>
           <p>
             <SubmitButton>Submit</SubmitButton>
+          </p>
+          <p>
+            <ResetButton>Reset</ResetButton>
           </p>
         </Form>
       </div>

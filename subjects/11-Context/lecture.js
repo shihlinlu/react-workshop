@@ -4,6 +4,10 @@ import PropTypes from "prop-types";
 
 import * as styles from "./styles";
 
+const TabsContext = React.createContext({ activeIndex: 0});
+// <TabsContext.Provider>
+// <TabsContext.Consumer>
+
 function TabList({ children, _activeIndex, _onTabSelect }) {
   return (
     <div style={styles.tabs}>
@@ -19,18 +23,22 @@ function TabList({ children, _activeIndex, _onTabSelect }) {
 
 function Tab({ children, disabled, _isActive, _onSelect }) {
   return (
-    <div
-      style={
-        disabled
-          ? styles.disabledTab
-          : _isActive
-            ? styles.activeTab
-            : styles.tab
-      }
-      onClick={disabled ? null : _onSelect}
-    >
-      {children}
-    </div>
+    <TabsContext.Consumer>
+      {value => (
+        <div
+          style={
+            disabled
+              ? styles.disabledTab
+              : _isActive
+              ? styles.activeTab
+              : styles.tab
+          }
+          onClick={disabled ? null : _onSelect}
+        >
+          {children}
+        </div>
+      )}
+    </TabsContext.Consumer>
   );
 }
 
