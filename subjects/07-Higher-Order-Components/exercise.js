@@ -17,22 +17,19 @@ import PropTypes from "prop-types";
 // HOC component
 function withMouse(Component) {
   return class AppWithMouse extends React.Component {
-    state = {
-      mouse: {
-        x: 0,
-        y: 0,
-      }
-    };
+    state = { x: 0, y: 0 };
 
     onMouseMove = (e) => {
-      // e.persist();
-      this.setState({ mouse: { x: e.screenX, y: e.screenY } });
+      this.setState({
+        x: e.clientX,
+        y: e.clientY
+      });
     };
 
     render () {
       return (
         <div onMouseMove={this.onMouseMove}>
-          <Component mouse={this.state.mouse} />
+          <Component {...this.props} mouse={this.state} />
         </div>
         )
 
@@ -43,19 +40,35 @@ function withMouse(Component) {
 // withCat HOC
 function withCat(Component) {
   return class extends React.Component {
+    state = { top: 0, left: 0 };
+
+    componentDidUpdate(prevProps) {
+      const { mouse } = this.props;
+
+      if (
+        mouse.x !== prevProps.mouse.x ||
+        mouse.y !== prevProps.mouse.y
+      ) {
+        this.setState({
+          top: mouse.y - Math.round(this.node.offsetHeight / 3),
+          left: mouse.x - Math.round(this.node.offsetWidth / 3)
+        });
+      }
+    }
 
     render() {
-      let { mouse } = this.props;
-      let style = { top: mouse.y - 50, left: mouse.x - 50 };
-
       return (
-        <React.Fragment>
-          <div className="cat" style={style} />
+        <div>
+          <div
+            ref={node => (this.node = node)}
+            className="cat"
+            style={this.state}
+          />
           <Component {...this.props} />
-        </React.Fragment>
-      )
+        </div>
+      );
     }
-  }
+  };
 }
 
 // main component
